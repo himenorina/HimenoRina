@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Detail{% endblock %}
+{% block header %}{% endblock %}
+{% block contents %}
+<div class="background left">
+    <h1>{{ object.title }}</h1>
+    <h6>{{ object.user.username}}</h6>
+    <br>
+    <p>{{ object.content }}</p>
+    <br>
+    <h6>{{ object.created_at }}</h6>
+    {% if is_liked %}
+        <button type="button" id="like-post" style="border:none;background:none">
+            <i class="fas fa-heart text-danger" id="icon">
+                <span id="like_count">{{ like_count }}件のいいね</span>
+            </i>
+        </button>
+    {% else %}
+        <button type="button" id="like-post" style="border:none;background:none">
+            <i class="far fa-heart text-danger" id="icon">
+                <span id="like_count">{{ like_count }}件のいいね</span>
+            </i>
+        </button>
+    {% endif %}
+</div>
+<hr>
+{% endblock %}
+{% block extrajs %}
+<!-- 投稿に対するお気に入り（Ajax）-->
+    <script type="text/javascript">
+        document.getElementById('like-post').addEventListener('click', e => {
+            e.preventDefault();
+            const url = '{% url "diary:like_post" %}';
+            fetch(url, {
+                method: 'POST',
+                body: 'post_pk={{object.pk}}',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    },
+                }).then(response => {
+                    return response.json();
+                }).then(response => {
+            //
+            const counter = document.getElementById('like_count')
+            counter.textContent = response.like_count + '件のいいね'
+            // アイコンの状態を変更する
+            const icon = document.getElementById('icon')
+            if (response.method == 'create'){
+                icon.classList.remove('far')
+                icon.classList.add('fas')
+                icon.id = 'icon'
+            } else {
+                icon.classList.remove('fas')
+                icon.classList.add('far')
+                icon.id = 'icon'
+            }
+            }).catch(error => {
+          console.log(error);
+        });
+      });
+    </script>
+{% endblock %}
